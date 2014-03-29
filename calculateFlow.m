@@ -16,7 +16,7 @@ function [] = calculateFlow(title)
 		tic;
 		uv(:,:,:,i) = estimate_flow_interface(imgs(:,:,:,i-1), imgs(:,:,:,i));
 		toc;
-	   fprintf('Process %d/%d frames', i, N-1);
+	   fprintf('Process %d/%d frames', i-1, N-1);
 	end
 
 	save([title '_flow'], 'uv');
