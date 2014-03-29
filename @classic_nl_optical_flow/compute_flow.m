@@ -184,12 +184,12 @@ function uv = compute_flow(this, init, gt)
 
       %fprintf('GNC stage %d finished, %3.2f minutes passed \t \t', ignc, toc/60);
       
-      if nargin == 3
-          [aae stdae aepe] = flowAngErr(gt(:,:,1), gt(:,:,2), uv(:,:,1), uv(:,:,2), 0);        % ignore 0 boundary pixels
-          fprintf('AAE %3.3f STD %3.3f average end point error %3.3f \n', aae, stdae, aepe);
-      else
-          fprintf('\n');
-      end;
+      %if nargin == 3
+      %    [aae stdae aepe] = flowAngErr(gt(:,:,1), gt(:,:,2), uv(:,:,1), uv(:,:,2), 0);        % ignore 0 boundary pixels
+      %    fprintf('AAE %3.3f STD %3.3f average end point error %3.3f \n', aae, stdae, aepe);
+      %else
+      %    fprintf('\n');
+      %end;
 
 
   end; 
