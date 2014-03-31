@@ -1,12 +1,12 @@
 function [] = viewFlow(title, flag)
 	if flag == 1
-		load([title '_flow.mat']);
+		load(['./result/' title '_flow.mat']);
 		[h, w, channel, N] = size(uv);
 		mean_flow = mean(mean(uv,1),2);
 		net_flow = uv - repmat(mean_flow, [h w 1 1]);
 		net_flow_mag = squeeze(sqrt(net_flow(:,:,1,:).^2+net_flow(:,:,2,:).^2));
 	elseif flag == 2
-		load([title '_flow2.mat']);
+		load(['./result/' title '_flow2.mat']);
 		[h, w, N] = size(vx);
 		mean_flowx = mean(mean(vx));
 		mean_flowy = mean(mean(vy));

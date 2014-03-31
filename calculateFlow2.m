@@ -31,5 +31,5 @@ function [] = calculateFlow2(title)
 	    fprintf('Process %d/%d frames\n', i-1, N-1);
 	end
 
-	save([title '_flow2'], 'vx', 'vy');
+	save('./result/' [title '_flow2'], 'vx', 'vy');
 end

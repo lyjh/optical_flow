@@ -19,5 +19,5 @@ function [] = calculateFlow(title)
 	    fprintf('Process %d/%d frames\n', i-1, N-1);
 	end
 
-	save([title '_flow'], 'uv');
+	save(['./result/' title '_flow'], 'uv');
 end
