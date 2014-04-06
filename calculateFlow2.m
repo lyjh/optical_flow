@@ -1,5 +1,5 @@
 function [] = calculateFlow2(title)
-	addpath('mex');
+    addpath('mex');
 	path = ['../Dataset/' title '/img/'];
 	d = dir([path '*.jpg']);
 	N = size(d,1);
@@ -33,7 +33,6 @@ function [] = calculateFlow2(title)
 	figure
     hold on
 	disp('Start calculating flow...');
-	pause;
 	for i=2:N
 		%% crop a region that is slightly larger than the current bounding box
         region = round([bbox(1)-0.25*bbox(3), bbox(2)-0.25*bbox(4), 1.5*bbox(3), 1.5*bbox(4)]);
@@ -69,16 +68,31 @@ function [] = calculateFlow2(title)
 		%% use k-means clustering to differentiate background and foreground
         [clusters, C] = kmeans(reshape(net_flow_mag(region(2):region(2)+region(4)-1, region(1):region(1)+region(3)-1), region(3)*region(4), 1), 2, 'start', 'uniform');
         clusters = reshape(clusters, region(4), region(3));
-        [thres, c] = max(C);
+        [thres, k] = max(C);
         %sort_flow_mag = sort(bboxL,'descend');
         %cumSum = cumsum(sort_flow_mag)./sum(bboxL);
         %thres = sort_flow_mag(find(cumSum > .25, 1, 'first' ));
 		%% get bounding box that surround the foreground
-        [r, c] = find(clusters == c);
+        [r, c] = find(clusters == k);
         x0 = min(c);
         x1 = max(c);
         y0 = min(r);
         y1 = max(r);
+        %% rect: foreground
+        mask = clusters == k;
+        %rect = [region(1)+x0-1, region(2)+y0-1, region(1)+x1-1, region(2)+y1-1];
+        flowx_fg = flowx(y0:y1, x0:x1) .* mask(y0:y1, x0:x1);
+        flowy_fg = flowy(y0:y1, x0:x1) .* mask(y0:y1, x0:x1);
+        o = [round(y1/2), round(x1/2)];
+        TL = [sum(sum(flowx_fg(1:o(1), 1:o(2))))/nnz(flowx_fg(1:o(1), 1:o(2))), sum(sum(flowy_fg(1:o(1), 1:o(2))))/nnz(flowy_fg(1:o(1), 1:o(2)))];
+        TR = [sum(sum(flowx_fg(1:o(1), o(2)+1:end)))/nnz(flowx_fg(1:o(1), o(2)+1:end)), sum(sum(flowy_fg(1:o(1), o(2)+1:end)))/nnz(flowy_fg(1:o(1), o(2)+1:end))];
+        BL = [sum(sum(flowx_fg(o(1)+1:end, 1:o(2))))/nnz(flowx_fg(o(1)+1:end, 1:o(2))), sum(sum(flowy_fg(o(1)+1:end, 1:o(2))))/nnz(flowy_fg(o(1)+1:end, 1:o(2)))];
+        BR = [sum(sum(flowx_fg(o(1)+1:end, o(2)+1:end)))/nnz(flowx_fg(o(1)+1:end, o(2)+1:end)), sum(sum(flowy_fg(o(1)+1:end, o(2)+1:end)))/nnz(flowy_fg(o(1)+1:end, o(2)+1:end))];
+        xx0 = bbox(1)+min(TL(1), BL(1));
+        xx1 = bbox(1)+bbox(3)+max(TR(1), BR(1));
+        yy0 = bbox(2)+min(TL(2), TR(2));
+        yy1 = bbox(2)+bbox(4)+max(BL(2), BR(2));
+        bbox = sanityCheck([xx0, yy0, xx1-xx0, yy1-yy0], w, h);
         %x0 = find(max(net_flow_mag(region(2):region(2)+region(4)-1, region(1):region(1)+region(3)-1))>thres, 1 );
         %x1 = find(max(net_flow_mag(region(2):region(2)+region(4)-1, region(1):region(1)+region(3)-1))>thres, 1, 'last' );
         %y0 = find(max(net_flow_mag(region(2):region(2)+region(4)-1, region(1):region(1)+region(3)-1),[],2)>thres, 1 );
@@ -87,7 +101,7 @@ function [] = calculateFlow2(title)
         subplot(2,1,2);
         imshow(im1);
         savedRes = [savedRes; bbox];
-        bbox = [region(1)+x0, region(2)+y0, x1-x0, y1-y0];
+        %bbox = [region(1)+x0-1, region(2)+y0-1, x1-x0, y1-y0];
         rectangle('Position', bbox, 'EdgeColor', 'g','LineWidth', 2.5);
         drawnow;
 	end
