@@ -4,6 +4,7 @@ function [] = calculateFlow2(title)
 	d = dir([path '*.jpg']);
 	N = size(d,1);
 
+	%% parameters for optical flow
 	alpha = 0.012;
 	ratio = 0.75;
 	minWidth = 20;
@@ -28,10 +29,13 @@ function [] = calculateFlow2(title)
     bbox = [p(1,1), p(1,2), p(2,1)-p(1,1), p(2,2)-p(1,2)];
       
 	savedRes = [];
+	close
+	figure
     hold on
 	disp('Start calculating flow...');
 	pause;
 	for i=2:N
+		%% crop a region that is slightly larger than the current bounding box
         region = round([bbox(1)-0.25*bbox(3), bbox(2)-0.25*bbox(4), 1.5*bbox(3), 1.5*bbox(4)]);
         region = sanityCheck(region, w, h);
         im1 = imgs(:,:,:,i-1);
@@ -50,6 +54,7 @@ function [] = calculateFlow2(title)
         
         clf
         diff = bbox(1:2)-region(1:2)+1;
+		%% flow that is outside the bounding box, but within the larger region
         flowx_bg = (sum(sum(flowx))-sum(sum(flowx(diff(2):diff(2)+bbox(4)-1,diff(1):diff(1)+bbox(3)-1))))/(region(3)*region(4)-bbox(3)*bbox(4));
         flowy_bg = (sum(sum(flowy))-sum(sum(flowy(diff(2):diff(2)+bbox(4)-1,diff(1):diff(1)+bbox(3)-1))))/(region(3)*region(4)-bbox(3)*bbox(4));
         
@@ -61,12 +66,14 @@ function [] = calculateFlow2(title)
         imagesc(net_flow_mag);
         %bboxS = reshape(net_flow_mag(bbox(2):bbox(2)+bbox(4)-1,bbox(1):bbox(1)+bbox(3)-1), bbox(3)*bbox(4),1);
         %bboxL = reshape(net_flow_mag(region(2):region(2)+region(4)-1, region(1):region(1)+region(3)-1), region(3)*region(4),1);
+		%% use k-means clustering to differentiate background and foreground
         [clusters, C] = kmeans(reshape(net_flow_mag(region(2):region(2)+region(4)-1, region(1):region(1)+region(3)-1), region(3)*region(4), 1), 2, 'start', 'uniform');
         clusters = reshape(clusters, region(4), region(3));
         [thres, c] = max(C);
         %sort_flow_mag = sort(bboxL,'descend');
         %cumSum = cumsum(sort_flow_mag)./sum(bboxL);
         %thres = sort_flow_mag(find(cumSum > .25, 1, 'first' ));
+		%% get bounding box that surround the foreground
         [r, c] = find(clusters == c);
         x0 = min(c);
         x1 = max(c);
