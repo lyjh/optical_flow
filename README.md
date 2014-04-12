@@ -19,3 +19,5 @@ while the second one is faster but slightly inaccurate.
 Using function viewFlow(title, flag) can visualize the flow of the sequence.
 If the flow is calculated by calculateFlow(), then set flag = 1,
 otherwise set flag = 2.
+
+3. Doing the tracking
