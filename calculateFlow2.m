@@ -1,5 +1,6 @@
 function [] = calculateFlow2(title)
-    addpath('mex');
+    close
+	addpath('mex');
 	path = ['../Dataset/' title '/img/'];
 	d = dir([path '*.jpg']);
 	N = size(d,1);
@@ -66,7 +67,11 @@ function [] = calculateFlow2(title)
         %bboxS = reshape(net_flow_mag(bbox(2):bbox(2)+bbox(4)-1,bbox(1):bbox(1)+bbox(3)-1), bbox(3)*bbox(4),1);
         %bboxL = reshape(net_flow_mag(region(2):region(2)+region(4)-1, region(1):region(1)+region(3)-1), region(3)*region(4),1);
 		%% use k-means clustering to differentiate background and foreground
-        [clusters, C] = kmeans(reshape(net_flow_mag(region(2):region(2)+region(4)-1, region(1):region(1)+region(3)-1), region(3)*region(4), 1), 2, 'start', 'uniform');
+        xval = repmat(region(1):region(1)+region(3)-1, region(4), 1);
+        yval = repmat(region(2):region(2)+region(4)-1, region(3), 1);
+        
+        cdata = cat(3, net_flow_mag(region(2):region(2)+region(4)-1, region(1):region(1)+region(3)-1), xval, yval');
+        [clusters, C] = kmeans(cdata, 2, 'start', 'uniform');
         clusters = reshape(clusters, region(4), region(3));
         [thres, k] = max(C);
         %sort_flow_mag = sort(bboxL,'descend');
@@ -83,7 +88,7 @@ function [] = calculateFlow2(title)
 
         flowx_fg = flowx(y0:y1, x0:x1) .* mask(y0:y1, x0:x1);
         flowy_fg = flowy(y0:y1, x0:x1) .* mask(y0:y1, x0:x1);
-		[TL, TR, BL, BR] = updateCorners(flowx_fg, flowy_fg);
+		[TL, TR, BL, BR] = updateCorners(flowx_fg, flowy_fg)
         %{
 		o = [round(y1/2), round(x1/2)];
         TL = [sum(sum(flowx_fg(1:o(1), 1:o(2))))/nnz(flowx_fg(1:o(1), 1:o(2))), sum(sum(flowy_fg(1:o(1), 1:o(2))))/nnz(flowy_fg(1:o(1), 1:o(2)))];
